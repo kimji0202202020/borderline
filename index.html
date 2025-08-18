@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>borderline</title>
+    <meta name="description" content="클라우드 기반 시나리오 작성 도구">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap');
+        :root {
+            --bg-primary: #ffffff; --bg-secondary: #f8fafc; --bg-tertiary: #f1f5f9; --bg-accent: #e2e8f0;
+            --text-primary: #1e293b; --text-secondary: #475569; --text-muted: #64748b;
+            --accent-color: #3b82f6; --accent-hover: #2563eb; --border-color: #e2e8f0;
+            --success-color: #10b981; --error-color: #ef4444;
+            --paper-bg: #ffffff; --paper-shadow: 0 4px 15px -2px rgba(0,0,0,0.07);
+            --page-height: 1056px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-secondary); color: var(--text-primary); height: 100vh; overflow: hidden; }
+        
+        #login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 2rem; }
+        .login-box { background: var(--bg-primary); padding: 3rem; border-radius: 12px; box-shadow: var(--paper-shadow); text-align: center; }
+        .login-box h1 { font-size: 2rem; margin-bottom: 1rem; }
+        #login-btn { background: #4285F4; color: white; border: none; padding: 0.8rem 1.5rem; font-size: 1rem; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; display: flex; align-items: center; gap: 0.8rem; }
+        #login-btn:hover { background: #357ae8; }
+        #login-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        #login-btn svg { width: 24px; height: 24px; }
+        #firebase-error-message { display: none; color: var(--error-color); background: #fef2f2; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: left; max-width: 400px; }
+
+        #app-container { display: none; height: 100vh; flex-direction: column; }
+        .header { background: var(--bg-primary); padding: 0 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; height: 65px; z-index: 10; }
+        .header-left, .header-center, .header-actions { display: flex; align-items: center; gap: 1rem; }
+        .header-center { flex-grow: 1; justify-content: center; }
+        .logo { display: flex; align-items: center; gap: 0.8rem; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 14px; }
+        .title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+        .action-btn { padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; }
+        .action-btn:hover { background: var(--accent-hover); }
+        .action-btn.secondary { background: var(--bg-tertiary); color: var(--text-secondary); }
+        .save-status { font-size: 0.85rem; color: var(--success-color); display: flex; align-items: center; gap: 0.5rem; }
+        .save-indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--success-color); }
+        .user-profile { display: flex; align-items: center; gap: 0.8rem; }
+        .user-profile img { width: 32px; height: 32px; border-radius: 50%; }
+        #logout-btn { background: var(--bg-tertiary); color: var(--text-secondary); border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+        
+        .main-container { display: flex; height: calc(100vh - 65px); }
+        .sidebar { width: 260px; background: var(--bg-primary); flex-shrink: 0; display: flex; flex-direction: column; transition: transform 0.3s ease-in-out; }
+        .sidebar-left { border-right: 1px solid var(--border-color); }
+        .sidebar-right { border-left: 1px solid var(--border-color); }
+        .scene-list, .sidebar-content { flex: 1; padding: 1rem; overflow-y: auto; }
+        .scene-list h3, .sidebar-section h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; padding: 0 0.5rem; }
+        .scene-item { padding: 0.6rem 0.8rem; margin-bottom: 0.4rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .scene-item:hover { background: var(--bg-tertiary); }
+        .editor-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-secondary); min-width: 0; }
+        .editor-toolbar { padding: 0.8rem 1.5rem; background: var(--bg-primary); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+        .format-buttons, .toolbar-right { display: flex; gap: 0.5rem; align-items: center; }
+        .format-btn { padding: 0.4rem 0.8rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); font-size: 0.8rem; cursor: pointer; }
+        .format-btn.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+        .zoom-btn { width: 36px; height: 36px; font-size: 1.2rem; border-radius: 6px; border: 1px solid var(--border-color); background-color: var(--bg-tertiary); color: var(--text-secondary); cursor: pointer; }
+        .zoom-level { font-size: 0.9rem; }
+        .screenplay-container { flex: 1; padding: 2rem; overflow-y: auto; }
+        .screenplay-editor { background: var(--paper-bg); color: #000000; width: 8.5in; margin: 0 auto; padding: 1in; font-family: 'Nanum Myeongjo', monospace; font-size: 12pt; line-height: 1.5; outline: none; min-height: 100%; box-shadow: var(--paper-shadow); }
+        .element { min-height: 1.5em; }
+        .element:empty:not(:focus):before { content: attr(data-placeholder); color: #aaa; cursor: text; }
+        .scene-heading { font-weight: bold; text-transform: uppercase; margin: 1.5rem 0 1rem 0; padding-top: 1.5rem; }
+        .action { margin: 1rem 0; max-width: 6in; }
+        .character { text-align: center; margin: 1rem 0 0.2rem 0; padding-left: 2in; padding-right: 2in; }
+        .dialogue { max-width: 3.7in; margin: 0 auto 1rem auto; text-align: left; }
+        .parenthetical { max-width: 2.5in; margin: 0 auto -0.8rem auto; text-align: center; color: #666; }
+        .sidebar-section { padding-bottom: 1.5rem; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .stat-item { background: var(--bg-tertiary); padding: 0.8rem; border-radius: 6px; text-align: center; }
+        .stat-number { font-size: 1.2rem; font-weight: 600; color: var(--accent-color); display: block; }
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); }
+        
+        .sidebar-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); padding: 0.5rem; }
+        .overlay, .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 99; }
+        .overlay.active, .modal.active { display: flex; }
+        .project-modal-content { background: var(--bg-primary); width: 90%; max-width: 500px; margin: auto; border-radius: 12px; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+        .project-list { max-height: 40vh; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
+        .project-item { padding: 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .project-item:last-child { border-bottom: none; }
+        .project-item:hover { background: var(--bg-tertiary); }
+        .project-item.active { background: var(--accent-color); color: white; }
+        .delete-project-btn { background: none; border: none; color: var(--error-color); cursor: pointer; font-size: 1rem; }
+        .new-project-form { display: flex; gap: 0.5rem; }
+        .new-project-form input { flex-grow: 1; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; }
+
+        @media (max-width: 1200px) { .sidebar-left { display: none; } .sidebar-toggle.left { display: block; } }
+        @media (max-width: 900px) { .sidebar-right { display: none; } .sidebar-toggle.right { display: block; } }
+    </style>
+</head>
+<body>
+
+    <div id="login-container">
+        <div class="login-box">
+            <div id="firebase-error-message">
+                <strong>Firebase 연결 실패!</strong><br>
+                firebase-config.js 파일의 내용을 실제 프로젝트 값으로 교체했는지 확인해주세요.
+            </div>
+            <div class="logo" style="justify-content: center; margin-bottom: 1.5rem;">
+                <div class="logo-icon">B</div>
+                <h1>borderline</h1>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">클라우드 기반 시나리오 에디터</p>
+            <button id="login-btn">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12.5C5,8.75 8.36,5.73 12.19,5.73C14.03,5.73 15.6,6.33 16.84,7.48L19.09,5.23C17.19,3.55 14.86,2.5 12.19,2.5C7.03,2.5 3,6.58 3,12.5C3,18.42 7.03,22.5 12.19,22.5C17.6,22.5 21.5,18.33 21.5,12.81C21.5,12.12 21.45,11.61 21.35,11.1Z"></path></svg>
+                Google 계정으로 시작하기
+            </button>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <div class="header">
+            <div class="header-left">
+                <button class="sidebar-toggle left" id="toggleProjectModal">☰</button>
+                <div class="logo">
+                    <div class="logo-icon">B</div>
+                    <div class="title">borderline</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="save-status" id="saveStatus">
+                    <div class="save-indicator"></div>
+                    <span>자동 저장됨</span>
+                </div>
+                <div class="user-profile" id="userProfile">
+                    <img id="userPhoto" src="" alt="User photo">
+                    <span id="userName"></span>
+                </div>
+                <button id="logout-btn">로그아웃</button>
+            </div>
+        </div>
+
+        <div class="main-container">
+            <div class="sidebar sidebar-left" id="sidebarLeft">
+                <div class="scene-list">
+                    <h3>장면 목록</h3>
+                    <div id="sceneList"></div>
+                </div>
+            </div>
+            <div class="editor-area">
+                <div class="editor-toolbar">
+                    <div class="format-buttons">
+                        <button class="format-btn" data-type="scene-heading">장면</button>
+                        <button class="format-btn" data-type="action">행동</button>
+                        <button class="format-btn" data-type="character">인물</button>
+                        <button class="format-btn" data-type="dialogue">대사</button>
+                        <button class="format-btn" data-type="parenthetical">지시</button>
+                    </div>
+                    <div class="toolbar-right">
+                        <div id="pageCountDisplay" style="font-size: 0.9rem; color: var(--text-muted);">1 페이지</div>
+                    </div>
+                </div>
+                <div class="screenplay-container" id="screenplayContainer">
+                    <div class="screenplay-editor" id="editor" contenteditable="true" spellcheck="false"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+
+    <div class="modal" id="projectModal">
+        <div class="project-modal-content">
+            <h2>프로젝트 목록</h2>
+            <div class="project-list" id="projectList"></div>
+            <div class="new-project-form">
+                <input type="text" id="newProjectName" placeholder="새 프로젝트 이름 (비워두면 자동 생성)">
+                <button class="action-btn" id="createNewProjectBtn">만들기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase 라이브러리 import
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        // 설정 파일 import
+        import { firebaseConfig } from "./firebase-config.js";
+
+        // --- DOM 요소 ---
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.getElementById('app-container');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const editor = document.getElementById('editor');
+        
+        // --- 상태 변수 ---
+        let currentUser = null;
+        let projects = [];
+        let currentProjectId = null;
+        let unsubscribeProjects = null; 
+        let autoSaveTimer;
+        let pageHeight = 1056;
+
+        // --- Firebase 초기화 및 인증 관리 ---
+        let auth, db;
+
+        try {
+            if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+                throw new Error("Firebase 설정이 유효하지 않습니다.");
+            }
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    loginContainer.style.display = 'none';
+                    appContainer.style.display = 'flex';
+                    document.getElementById('userPhoto').src = user.photoURL;
+                    document.getElementById('userName').textContent = user.displayName;
+                    loadProjectsForUser(user.uid);
+                } else {
+                    currentUser = null;
+                    loginContainer.style.display = 'flex';
+                    appContainer.style.display = 'none';
+                    if (unsubscribeProjects) unsubscribeProjects();
+                    projects = [];
+                    editor.innerHTML = '';
+                }
+            });
+
+            loginBtn.addEventListener('click', () => {
+                const provider = new GoogleAuthProvider();
+                signInWithPopup(auth, provider).catch(error => console.error("로그인 에러:", error));
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                signOut(auth).catch(error => console.error("로그아웃 에러:", error));
+            });
+
+        } catch (e) {
+            console.error("Firebase 초기화 실패:", e.message);
+            document.getElementById('firebase-error-message').style.display = 'block';
+            loginBtn.disabled = true;
+        }
+
+
+        // --- 프로젝트 데이터 관리 (Firestore) ---
+        function loadProjectsForUser(userId) {
+            const projectsRef = collection(db, 'projects');
+            const q = query(projectsRef, where("ownerId", "==", userId), orderBy("lastModified", "desc"));
+
+            unsubscribeProjects = onSnapshot(q, (snapshot) => {
+                projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderProjectList();
+                
+                if (!projects.find(p => p.id === currentProjectId)) {
+                    currentProjectId = projects[0]?.id || null;
+                }
+                
+                if (currentProjectId) {
+                    switchProject(currentProjectId);
+                } else if (projects.length === 0) {
+                    createNewProject("나의 첫 시나리오");
+                }
+            });
+        }
+
+        async function createNewProject(name) {
+            if (!currentUser) return;
+            const newName = name || "새 프로젝트";
+            const newProject = {
+                name: newName,
+                content: `<div class="element scene-heading" data-type="scene-heading" data-placeholder="예: S#1. 카페 - 낮"><br></div>`,
+                ownerId: currentUser.uid,
+                createdAt: serverTimestamp(),
+                lastModified: serverTimestamp()
+            };
+            try {
+                const docRef = await addDoc(collection(db, 'projects'), newProject);
+                currentProjectId = docRef.id;
+                if (!name) {
+                    updateProjectName(docRef.id, generateProjectName());
+                }
+            } catch (e) {
+                console.error("프로젝트 생성 에러: ", e);
+            }
+        }
+
+        function switchProject(id) {
+            const project = projects.find(p => p.id === id);
+            if (project) {
+                editor.innerHTML = project.content;
+                currentProjectId = id;
+                updateStats();
+                closeProjectModal();
+            }
+        }
+        
+        async function updateProjectName(id, newName) {
+            const projectRef = doc(db, 'projects', id);
+            await updateDoc(projectRef, { name: newName });
+        }
+
+        async function saveCurrentProject() {
+            if (!currentUser || !currentProjectId) return;
+            const projectRef = doc(db, 'projects', currentProjectId);
+            try {
+                await updateDoc(projectRef, {
+                    content: editor.innerHTML,
+                    lastModified: serverTimestamp()
+                });
+                const statusSpan = document.querySelector('#saveStatus span');
+                if(statusSpan) {
+                    statusSpan.textContent = '저장 중...';
+                    setTimeout(() => { statusSpan.textContent = '클라우드 저장됨'; }, 500);
+                }
+            } catch (e) {
+                console.error("저장 에러:", e);
+            }
+        }
+        
+        async function deleteProject(id) {
+            if (confirm("정말로 이 프로젝트를 삭제하시겠습니까?")) {
+                const projectRef = doc(db, 'projects', id);
+                await deleteDoc(projectRef);
+            }
+        }
+
+        function triggerAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(saveCurrentProject, 2000);
+        }
+
+        function renderProjectList() {
+            const listEl = document.getElementById('projectList');
+            listEl.innerHTML = '';
+            projects.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'project-item';
+                item.classList.toggle('active', p.id === currentProjectId);
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = p.name;
+                nameSpan.onclick = () => switchProject(p.id);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-project-btn';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteProject(p.id);
+                };
+                
+                item.appendChild(nameSpan);
+                item.appendChild(deleteBtn);
+                listEl.appendChild(item);
+            });
+        }
+        
+        // --- 에디터 로직 ---
+        const elementTypes = {
+            'scene-heading': { name: '장면', class: 'scene-heading', placeholder: '예: S#1. 카페 - 낮' },
+            'action': { name: '행동', class: 'action', placeholder: '행동이나 지문을 입력하세요' },
+            'character': { name: '인물', class: 'character', placeholder: '인물 이름' },
+            'dialogue': { name: '대사', class: 'dialogue', placeholder: '대사를 입력하세요' },
+            'parenthetical': { name: '지시', class: 'parenthetical', placeholder: '(놀라며)' }
+        };
+
+        function getActiveElementNode() {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return null;
+            let node = selection.anchorNode;
+            return node.nodeType === Node.TEXT_NODE ? node.parentElement.closest('.element') : node.closest('.element');
+        }
+
+        function createNewElement(type, content = '') {
+            const div = document.createElement('div');
+            div.className = `element ${elementTypes[type].class}`;
+            div.dataset.type = type;
+            div.dataset.placeholder = elementTypes[type].placeholder;
+            div.innerHTML = content ? content.replace(/\n/g, '<br>') : '<br>';
+            return div;
+        }
+
+        function setCaret(element) {
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.selectNodeContents(element);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        function updateStats() {
+            const calculatedPageCount = Math.ceil(editor.scrollHeight / pageHeight);
+            document.getElementById('pageCountDisplay').textContent = `${calculatedPageCount > 0 ? calculatedPageCount : 1} 페이지`;
+        }
+
+        editor.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const currentElement = getActiveElementNode();
+                if (!currentElement) return;
+                const nextType = getNextElementType(currentElement.dataset.type, currentElement.textContent);
+                const newElement = createNewElement(nextType);
+                currentElement.after(newElement);
+                setCaret(newElement);
+            }
+        });
+        
+        function getNextElementType(currentType, currentText) {
+            switch (currentType) {
+                case 'scene-heading': return 'action';
+                case 'action': return currentText.trim() ? 'character' : 'action';
+                case 'character': return 'dialogue';
+                case 'dialogue': return 'character';
+                case 'parenthetical': return 'dialogue';
+                default: return 'action';
+            }
+        }
+
+        editor.addEventListener('input', () => {
+            updateStats();
+            triggerAutoSave();
+        });
+
+        // --- UI 컨트롤 ---
+        const projectModal = document.getElementById('projectModal');
+        const toggleProjectModalBtn = document.getElementById('toggleProjectModal');
+        const createNewProjectBtn = document.getElementById('createNewProjectBtn');
+        const newProjectNameInput = document.getElementById('newProjectName');
+        const overlay = document.getElementById('overlay');
+
+        function openProjectModal() {
+            renderProjectList();
+            projectModal.classList.add('active');
+            overlay.classList.add('active');
+        }
+
+        function closeProjectModal() {
+            projectModal.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        function generateProjectName() {
+            const firstScene = editor.querySelector('.scene-heading')?.textContent.trim() || '무제';
+            const firstAction = editor.querySelector('.action')?.textContent.trim() || '시나리오';
+            return `${firstScene} - ${firstAction.substring(0, 10)}...`;
+        }
+
+        toggleProjectModalBtn.addEventListener('click', openProjectModal);
+        overlay.addEventListener('click', closeProjectModal);
+        createNewProjectBtn.addEventListener('click', () => {
+            createNewProject(newProjectNameInput.value.trim());
+            newProjectNameInput.value = '';
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            pageHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--page-height'));
+        });
+
+    </script>
+</body>
+</html>
