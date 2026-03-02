@@ -19,7 +19,7 @@ export async function loadProjectsForUser(userId) {
         return state.projects;
     } catch (error) {
         console.error("Load Projects Error:", error);
-        showToast("프로젝트 목록을 불러오지 못했습니다.", 'error');
+        showToast("시나리오 목록을 불러오지 못했습니다.", 'error');
         return [];
     }
 }

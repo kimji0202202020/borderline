@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>borderline</title>
+    <meta name="description" content="Borderline - 당신의 이야기를 완성하는 시나리오 에디터. 장면, 대사, 지문을 손쉽게 작성하고 관리하세요.">
+    <meta name="keywords" content="시나리오, 에디터, 각본, 스크린플레이, screenplay editor, 글쓰기, 창작">
+    <meta name="author" content="Borderline">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Borderline — 시나리오 에디터">
+    <meta property="og:description" content="당신의 이야기를 완성하는 공간. 장면, 대사, 지문을 손쉽게 작성하고 PDF로 내보내세요.">
+    <meta property="og:site_name" content="Borderline">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Borderline — 시나리오 에디터">
+    <meta name="twitter:description" content="당신의 이야기를 완성하는 공간. 장면, 대사, 지문을 손쉽게 작성하고 PDF로 내보내세요.">
+
+    <title>Borderline — 시나리오 에디터</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%233b82f6'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='60' font-weight='bold' fill='white'>B</text></svg>">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -12,18 +29,45 @@
 </head>
 <body>
     <div id="login-container">
-        <div class="login-box">
-            <div class="logo">
-                <div class="logo-icon">B</div>
-                <h1>borderline</h1>
+        <div class="landing-page">
+            <div class="landing-hero">
+                <div class="login-box">
+                    <div class="logo">
+                        <div class="logo-icon">B</div>
+                        <h1>borderline</h1>
+                    </div>
+                    <p class="landing-tagline">당신의 이야기를 완성하는 공간</p>
+                    <p class="landing-description">장면, 대사, 지문을 손쉽게 작성하고<br>전문적인 시나리오를 만들어 보세요.</p>
+                    <div class="landing-buttons">
+                        <button id="login-btn">
+                            <span>Google 계정으로 시작하기</span>
+                        </button>
+                        <button id="guest-btn" class="guest-login-btn">
+                            <span>로그인 없이 체험하기</span>
+                        </button>
+                    </div>
+                    <div id="firebase-error-message">
+                        <strong>Firebase 연결 실패!</strong><br>
+                        firebase-config.js 파일 설정을 확인해주세요.
+                    </div>
+                </div>
             </div>
-            <p>당신의 이야기를 완성하는 공간</p>
-            <button id="login-btn">
-                <span>Google 계정으로 시작하기</span>
-            </button>
-            <div id="firebase-error-message">
-                <strong>Firebase 연결 실패!</strong><br>
-                firebase-config.js 파일 설정을 확인해주세요.
+            <div class="landing-features">
+                <div class="feature-card">
+                    <div class="feature-icon">✍️</div>
+                    <h3>직관적인 편집</h3>
+                    <p>장면, 행동, 인물, 대사, 지시 — 5가지 요소를 단축키와 Tab으로 빠르게 전환하며 작성하세요.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>자동 저장</h3>
+                    <p>작성 중인 내용이 자동으로 저장됩니다. 작업에만 집중하세요.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <h3>내보내기</h3>
+                    <p>완성된 시나리오를 TXT 또는 PDF 형식으로 내보내 어디서든 공유하세요.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -38,7 +82,7 @@
                 </div>
             </div>
             <div class="nav-tabs">
-                <button class="nav-tab active" data-tab="projects">프로젝트</button>
+                <button class="nav-tab active" data-tab="projects">시나리오</button>
                 <button class="nav-tab" data-tab="scenes">장면</button>
                 <button class="nav-tab" data-tab="characters">인물</button>
                 <button class="nav-tab" data-tab="memo">메모</button>
@@ -59,7 +103,7 @@
             </div>
             <div class="sidebar-footer">
                  <button class="add-project-btn" id="add-project-btn">
-                    <span>새 프로젝트 만들기</span>
+                    <span>새 시나리오 추가</span>
                 </button>
                 <div class="user-profile">
                     <img id="user-photo" src="" alt="">
@@ -74,7 +118,7 @@
                 <div class="header-group">
                     <button class="icon-btn" id="toggle-nav-btn">☰</button>
                     <div id="current-project-title-wrapper">
-                        <div id="current-project-title">프로젝트를 선택하세요</div>
+                        <div id="current-project-title">시나리오를 선택하세요</div>
                         <button class="icon-btn" id="rename-project-btn">✎</button>
                     </div>
                 </div>
@@ -83,11 +127,17 @@
                         <div class="save-indicator"></div>
                         <span></span>
                     </div>
+                    <div class="undo-redo-controls">
+                        <button class="icon-btn" id="undo-btn" title="실행 취소 (Ctrl+Z)">↩</button>
+                        <button class="icon-btn" id="redo-btn" title="다시 실행 (Ctrl+Y)">↪</button>
+                    </div>
                     <div class="zoom-controls" id="zoom-controls">
                         <button class="icon-btn" id="zoom-out-btn">-</button>
                         <button class="zoom-reset-btn" id="zoom-reset-btn">100%</button>
                         <button class="icon-btn" id="zoom-in-btn">+</button>
                     </div>
+                    <button class="icon-btn" id="theme-toggle-btn" title="테마 전환">☀</button>
+                    <button class="icon-btn" id="help-btn" title="단축키 도움말">?</button>
                     <button class="action-btn" id="export-btn">내보내기</button>
                 </div>
             </header>
@@ -101,6 +151,8 @@
                         <button class="format-btn" data-type="dialogue">대사</button>
                         <button class="format-btn" data-type="parenthetical">지시</button>
                     </div>
+                    <span class="toolbar-divider"></span>
+                    <span class="toolbar-hint" id="toolbar-hint">Enter로 다음 형식 자동 전환</span>
                 </div>
                 <div class="screenplay-container" id="screenplay-container">
                     <div class="screenplay-editor" id="editor" contenteditable="true" spellcheck="false"></div>
@@ -111,11 +163,11 @@
 
     <div class="modal-overlay" id="new-project-modal">
         <div class="modal-content">
-            <h3>새 프로젝트 만들기</h3>
-            <input type="text" id="new-project-name" placeholder="프로젝트 이름">
+            <h3>새 시나리오 추가</h3>
+            <input type="text" id="new-project-name" placeholder="시나리오 이름">
             <div class="modal-actions">
                 <button class="modal-btn secondary" data-action="close">취소</button>
-                <button class="modal-btn primary" id="create-project-btn">만들기</button>
+                <button class="modal-btn primary" id="create-project-btn">추가</button>
             </div>
         </div>
     </div>
@@ -153,6 +205,39 @@
     </div>
     
     <div id="toast-container"></div>
+
+    <!-- 단축키 도움말 모달 -->
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal-content help-modal-content">
+            <h3>키보드 단축키</h3>
+            <div class="shortcut-list">
+                <div class="shortcut-group">
+                    <h4>요소 전환</h4>
+                    <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>1</kbd><span>장면</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>2</kbd><span>행동</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>3</kbd><span>인물</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>4</kbd><span>대사</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>5</kbd><span>지시</span></div>
+                    <div class="shortcut-item"><kbd>Tab</kbd><span>요소 타입 순환</span></div>
+                </div>
+                <div class="shortcut-group">
+                    <h4>편집</h4>
+                    <div class="shortcut-item"><kbd>Enter</kbd><span>다음 추천 요소 추가</span></div>
+                    <div class="shortcut-item"><kbd>Shift</kbd>+<kbd>Enter</kbd><span>같은 타입으로 줄바꿈</span></div>
+                    <div class="shortcut-item"><kbd>Backspace</kbd><span>빈 요소 삭제</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>Z</kbd><span>실행 취소</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>Y</kbd><span>다시 실행</span></div>
+                </div>
+                <div class="shortcut-group">
+                    <h4>Enter 자동 전환 순서</h4>
+                    <div class="shortcut-item"><span style="color:var(--text-primary)">장면 → 행동 → 인물 → 대사 → 인물 → ...</span></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" data-action="close">닫기</button>
+            </div>
+        </div>
+    </div>
     
     <script type="module" src="main.js"></script>
 </body>

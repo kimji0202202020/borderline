@@ -1,4 +1,4 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { state } from "./state.js";
 import { $, showToast } from "./utils.js";
 
@@ -27,14 +27,6 @@ export function initAuth(app, onLoginSuccess, onLogoutSuccess) {
                 console.error("Login Error:", error);
                 showToast(`로그인 실패: ${error.code}`, 'error');
             });
-        });
-    }
-
-    // 로그아웃 버튼 이벤트
-    const logoutBtn = $('#logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            signOut(auth).catch(error => console.error("Logout Error:", error));
         });
     }
 }
